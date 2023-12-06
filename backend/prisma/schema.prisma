@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model CollectionLocation {
+  id         Int        @id @unique @default(autoincrement())
+  name       String
+  street     String
+  number     String
+  complement String?
+  city       City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  cityId     Int
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+  Donations  Donation[]
+
+  @@map("collection_locations")
+}
+
+model Donation {
+  id        Int                @id @unique @default(autoincrement())
+  person    Person             @relation(fields: [personId], references: [id], onDelete: Cascade)
+  personId  Int
+  local     CollectionLocation @relation(fields: [localId], references: [id], onDelete: Cascade)
+  localId   Int
+  date      DateTime
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@map("donations")
+}
+
+model Person {
+  id          Int        @id @unique @default(autoincrement())
+  name        String
+  street      String
+  number      String
+  complement  String?
+  rg          String
+  city        City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  cityId      Int
+  bloodType   BloodType  @relation(fields: [bloodTypeId], references: [id], onDelete: Cascade)
+  bloodTypeId Int
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  Donations   Donation[]
+
+  @@map("persons")
+}
+
+model City {
+  id                  Int                  @id @unique @default(autoincrement())
+  name                String
+  state               State                @relation(fields: [stateId], references: [id], onDelete: Cascade)
+  stateId             Int
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  Persons             Person[]
+  CollectionLocations CollectionLocation[]
+
+  @@map("cities")
+}
+
+model State {
+  id        Int      @id @unique @default(autoincrement())
+  name      String
+  acronym   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Cities    City[]
+
+  @@map("states")
+}
+
+model BloodType {
+  id        Int      @id @unique @default(autoincrement())
+  type      String
+  factor    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Persons   Person[]
+
+  @@map("blood_types")
+}
